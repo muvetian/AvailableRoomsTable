@@ -1,0 +1,558 @@
+<!DOCTYPE>
+<html>
+	<head>
+		<style>
+			*{
+				box-sizing:border-box;	
+				font-family:verdana;
+				font-size:14px;
+			}
+			body{
+				background-color:#F9E5D4;	
+                /*min-width:630px;*/
+			}
+			#search_div{
+				background-color:white;
+				border-radius:10px;
+				width:80%;
+				margin:0 auto;
+				margin-top:80px;	
+				transition:0.5s;
+				cursor:pointer;
+				box-shadow: 0px 0px 5px #87051C;
+                margin-bottom:10%;
+			}
+			#search_choices_table{
+				width:100%;	
+				text-align:center;
+			}
+			#search_choices_table td{
+				border-right: 2px solid #cccccc;	
+				padding:10px;
+			}
+			#search_choices_table td:hover{
+				color:#8E0720;	
+				background-color:#FDF3F5;
+			}
+			#one_class_one_time_search{
+				width:100%;	
+				margin-top:20px;
+				background-color:#cccccc;
+				transition:0.5s;
+                border-bottom-right-radius:10px;
+                border-bottom-left-radius:10px;
+				display:none;
+			}
+			#one_class_one_time_search td{
+				padding:10px;
+				text-align:center;	
+				transition:0.5s;
+			}
+			#Enter, #schedule_enter, #all_classrooms_enter{
+				background-color:#c1f0f0;
+				border:1px solid #bfbfbf;
+				border-radius:3px;
+				cursor:pointer;
+				padding:5px;	
+			}
+			#Enter:hover, #schedule_enter:hover, #all_classrooms_enter:hover{
+				background-color:#adebeb;	
+			}
+			.available{
+				color:#00b386;	
+			}
+			.closed{
+				color:red;	
+			}
+			#weekly_schedule_table{
+				width:99%;
+				margin:0 auto;
+                margin-top:10px;
+				text-align:center;	
+				border-collapse:collapse;
+			}
+			#weekly_schedule_table td, #weekly_schedule_table th{
+				width:20%;	
+				padding:5px;
+			}
+			#weekly_schedule_table th{
+				border:none;	
+			}
+			#mon_table, #wed_table, #fri_table{
+				text-align:center;	
+			}
+			#mon_table td, #wed_table td, #fri_table td{
+				border:1px solid #cccccc;	
+				height:40px;
+			}
+			#tue_table, #thu_table{
+				height:100%;
+				text-align:center;	
+			}
+			#tue_table td, #thu_table td{
+				border:1px solid #cccccc;
+				height:45px;
+			}
+			.no_hover:hover{
+				background-color:white !important;	
+			}
+          #all_classrooms_one_time{
+            display:none;
+          }
+          #all_classrooms_one_time_table{
+            width:100%;
+            text-align:center;
+            margin-top:20px;
+            background-color:#cccccc;
+          }
+          #all_classrooms_one_time_table td{
+            padding:10px;
+            width:33%;
+          }
+          #all_classrooms_results_table{
+            text-align:center;
+            width:100%;
+            border-collapse:collapse;
+            display:none;
+            padding:0px;
+          }
+          #all_classrooms_results_table tr{
+            border:1px solid #999999;
+            width:100%;
+          }
+          #all_classrooms_results_table td{
+            padding:10px;
+            width:50%;
+          }
+          #class_search_header{
+            text-align:center;
+            position:absolute;
+            top:5px;
+            left:30%;
+            font-size:24px;
+            color:#8E0720;
+            margin-left:80px;
+          }
+          #top_divider, #bottom_divider{
+            float:left;
+            width:50%;
+          }
+          #one_class_one_time_search{
+            height:60px;
+            padding:15px;
+            padding-bottom:30px;
+            width:100%;
+          }
+          .up_arrow:hover, .down_arrow:hover{
+            color:#009999;
+          }
+          .tooltip{
+            width:115px;
+            height:70px;
+            display:none;
+            background-color:#e6e6e6;
+            position:absolute;
+            padding:10px;
+            z-index:2;
+            border-radius:5px;
+            box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2), 0 8px 22px 0 rgba(0, 0, 0, 0.19);
+          }
+          
+          @media only screen and (max-width:1000px){
+            #dav_logo{
+              display:none;
+            }
+            #class_search_header{
+              margin-left:0px;
+              left:10%;
+              width:80%;
+            }
+            #search_div{
+              width:95%;
+            }
+          }
+          @media only screen and (max-width:950px){
+            #top_divider, #bottom_divider{
+              width:100%;
+              float:none;
+            }
+            #bottom_divider{
+              padding-top:40px;
+            }
+            #one_class_one_time_search{
+              height:100px;
+            }
+          }
+		</style>
+		
+		<script>
+          
+          var formIDs = ["one_class_one_time_search", "weekly_schedule_div", "all_classrooms_one_time"];
+          function openForm(formID){
+            for (var i = 0; i < formIDs.length; i++){
+              if (formIDs[i] == formID){
+                document.getElementById(formID).style.display = 'block';
+                document.getElementById(formID + "_head").style.color = "#8E0720";
+                document.getElementById(formID + "_head").style.backgroundColor = "#FDF3F5";
+              } 
+              else{
+                document.getElementById(formIDs[i]).style.display = 'none';
+                document.getElementById(formIDs[i] + "_head").style.color = "black";
+                document.getElementById(formIDs[i] + "_head").style.backgroundColor = "white";
+              }
+            }
+          }
+          
+          function findAllClassrooms(){
+            document.getElementById('all_classrooms_results_table').style.display = 'block';
+          }
+          function highlightUnreserved(element){
+              element.style.backgroundColor = "#e6e6e6"; 
+              element.innerHTML = "Reserve Now";
+              element.style.color = "#29a3a3";
+          }
+          function unhighlightUnreserved(element){
+            element.style.backgroundColor = "white";
+            element.innerHTML = element.className;
+            element.style.color = "black";
+          }
+          
+			function checkAvailability(formID){
+
+				var bldg = document.getElementById(formID + "building").value;
+				var rm_num = document.getElementById(formID + "rm_num").value;
+				var day = document.getElementById(formID + "day").value;
+				var time = document.getElementById("hour").innerHTML + 
+                    document.getElementById("min").innerHTML;
+
+				if ((bldg == "CHAM") && (rm_num == "101") && 
+				(day == "Tuesday") && (time == "940")){
+					document.getElementById('availability_td').innerHTML = "<span class='available'>Open &#10003</span>";
+				}
+				else{
+					document.getElementById('availability_td').innerHTML = "<span class='closed'>Closed &#10007</span>";
+				}
+                document.getElementById("enter_div").style.width = "25%";
+                document.getElementById("time_div").style.width = "30%";
+                document.getElementById("availability_td").style.width = "10%;";
+			}
+          
+          var timesTaken = ["930", "815", "1230", "1030"];
+          var reasonsTaken = ["MUS 101", "ENV 211", "MAT 112", "BIO 310"];
+          var profsTeaching = ["Botelho", "Carrot", "Heyer", "Campbell"];
+          var timeRanges = ["9:30-10:20", "8:15-9:30", "12:30-1:20", "10:30-11:20"];
+          var randomColors = ["#ff9999", "#b3d9ff","#ccccff", "#adebeb", "#ffffcc"];
+          function displaySchedule(){
+            
+            var bldg = document.getElementById("schedule_building").value;
+            var rm_num = document.getElementById("schedule_rm_num").value;
+            
+            if (bldg == "WATSON" && rm_num == "101"){
+              for (var i = 0; i < timesTaken.length; i++){(
+                function(i){
+                  var timeSlots = document.getElementsByClassName(timesTaken[i])
+                  for (var j = 0; j < timeSlots.length; j++){(
+                    function(j){
+                      timeSlots[j].style.backgroundColor = randomColors[i];
+                      timeSlots[j].className = timesTaken[i];
+                      timeSlots[j].innerHTML = reasonsTaken[i] + "<span class='tooltip' id='" + reasonsTaken[i] + j + "'>" + 
+                        profsTeaching[i] + "<br><br>" + timeRanges[i] + "</span>";
+                      timeSlots[j].onmouseover = function()
+                      {document.getElementById(reasonsTaken[i] + j).style.display = 'block';};
+                      timeSlots[j].onmouseout = function()
+                      {document.getElementById(reasonsTaken[i] + j).style.display = 'none';};
+                      
+                    })(j);
+                  }
+                })(i);
+              }
+            }
+          }
+          
+          function increaseNum(type){
+            var element = document.getElementById(type);
+            if (type == 'morn-aft'){
+              if (element.innerHTML == 'AM'){
+                element.innerHTML = 'PM';
+              }
+              else{
+                element.innerHTML = "AM";
+              }
+            }
+            else{
+              var newNum = parseInt(element.innerHTML) + 1;
+              if (type == 'hour' && newNum > 12){
+                newNum = newNum - 12;
+                element.innerHTML = newNum + '';
+              }
+              else if (type == 'min' && newNum < 10){
+                element.innerHTML = '0' + newNum;
+              }
+              else if (type == 'min' && newNum > 59){
+                newNum = '00';
+                element.innerHTML = newNum + '';
+              }
+              else{
+                element.innerHTML = newNum;
+              }
+            }
+          }
+          
+          function decreaseNum(type){
+            var element = document.getElementById(type);
+            if (type == 'morn-aft'){
+              if (element.innerHTML == 'AM'){
+                element.innerHTML = 'PM';
+              }
+              else{
+                element.innerHTML = "AM";
+              }
+            }
+            else{
+              var newNum = parseInt(element.innerHTML) - 1;
+              if (type == 'hour' && newNum < 1){
+                newNum = 12;
+                element.innerHTML = newNum + '';
+              }
+              else if (type == 'min' && newNum < 10 && newNum >= 0){
+                element.innerHTML = '0' + newNum;
+              }
+              else if (type == 'min' && newNum < 0){
+                newNum = '59';
+                element.innerHTML = newNum + '';
+              }
+              else{
+                element.innerHTML = newNum;
+              }
+            }
+          }
+		</script>
+	</head>
+	<body>
+      <img src="https://offices.davidson.edu/communications/marketing-toolbox/logos/black-ltr-red-bar-white-di/black-letters-red-bar-white-diamond-logo_cmyk.jpg"
+           style="height:50px;margin:5px;" id="dav_logo"/<img>
+      <p id="class_search_header">Classroom Search</p>
+		<div id="search_div">
+			<table id="search_choices_table">
+				<tr>
+					<td id="one_class_one_time_search_head" onclick="openForm('one_class_one_time_search');">Check Whether a Classroom Holds Class at a Certain Time</td>
+					<td id="weekly_schedule_div_head" onclick="openForm('weekly_schedule_div')">Search For a Classroom's Weekly Schedule</td>
+					<td id="all_classrooms_one_time_head" onclick="openForm('all_classrooms_one_time')" style="border:none;">Look Up All of the Classrooms that are Available at a Particular Time</td>
+				</tr>
+			</table>
+          
+			<div id="one_class_one_time_search">
+                <div id="top_divider">
+                <div style="float:left;width:50%;text-align:center;transition:0.5s;" id="bldg_div">
+				<label>Building:</label>
+				<select id="one_class_one_time_building">
+					<option value="CHAM">CHAM</option>
+					<option value="SLOAN">SLOAN</option>
+					<option value="WATSON">WATSON</option>
+					<option value="DANA">DANA</option>
+				</select>
+              </div>
+			  <div style="float:left;width:50%;text-align:center;transition:0.5s;" id="rm_num_div">
+				<label>Room Number:</label>
+				<select id="one_class_one_time_rm_num">
+					<option value="101">101</option>
+					<option value="211">211</option>
+					<option value="312">312</option>
+					<option value="900">900</option>
+				</select>
+              </div>
+              </div>
+              
+              <div id="bottom_divider">
+			  <div style="float:left;width:35%;text-align:center;transition:0.5s;" id="day_div">
+				<label>Day:</label>
+				<select id="one_class_one_time_day">
+					<option value="Monday">Monday</option>
+					<option value="Tuesday">Tuesday</option>
+					<option value="Wednesday">Wednesday</option>
+					<option value="Thursday">Thursday</option>
+					<option value="Friday">Friday</option>
+				</select>
+              </div>
+              <div style="float:left;width:35%;text-align:center;transition:0.5s;margin-top:-15px;height:60px;" id="time_div">
+                  <p style="position:relative;top:-15px;left:31px;width:10px;" class="up_arrow" onclick="increaseNum('hour')"><b>&and;</b></p>
+                  <p style="position:relative;top:-48px;left:101px;width:10px;" class="up_arrow" onclick="increaseNum('min')"><b>&and;</b></p>
+                
+                  <p style="position:relative;top:-63px;left:25px;width:24px;background-color:#e6e6e6;border-radius:3px;cursor:auto;" id="hour" contenteditable>12</p>
+                  <p style="position:relative;top:-96px;left:65px;width:10px;">:</p>
+                  <p style="position:relative;top:-125px;left:94px;width:24px;background-color:#e6e6e6;border-radius:3px;cursor:auto;" id="min" contenteditable>00</p>
+                
+                  <p style="position:relative;top:-139px;left:31px;width:10px;" class="down_arrow" onclick="decreaseNum('hour')"><b>&or;</b></p>
+                  <p style="position:relative;top:-172px;left:101px;width:10px;" class="down_arrow" onclick="decreaseNum('min')"><b>&or;</b></p>
+              </div>
+              <div style="float:left;text-align:center;width:30%;" id="enter_div">
+				<input type="button" id="Enter" onclick="checkAvailability('one_class_one_time_')" value="Enter"/>
+              </div>
+			  <div id="availability_td" style="width:0%;text-align:center;float:left;transition:0.5s;">
+			  </div>
+              </div>
+			</div>
+			
+			<div id="weekly_schedule_div" style="margin-top:30px;display:none;">
+              <table style="width:100%;text-align:center;">
+                <tr>
+                  <td style="width:33%;"><label>Building:</label>
+			        <select id="schedule_building">
+				    <option value="CHAM">CHAM</option>
+				    <option value="SLOAN">SLOAN</option>
+				    <option value="WATSON">WATSON</option>
+				    <option value="DANA">DANA</option>
+                    </select></td>
+                  <td style="width:33%;"><label>Room Number:</label>
+					  <select id="schedule_rm_num">
+						<option value="101">101</option>
+						<option value="211">211</option>
+						<option value="312">312</option>
+						<option value="900">900</option>
+					  </select></td>
+                  <td style="width:33%;"><input type="button" id="schedule_enter" onclick="displaySchedule()" value="Enter"/></td>
+                </tr>
+              </table>
+			  <div id="week_classroom_header">
+			  </div>
+			<table id="weekly_schedule_table" style="margin-top:20px;">
+				<tr>
+					<th>M</th>
+					<th>T</th>
+					<th>W</th>
+					<th>R</th>
+					<th>F</th>
+				</tr>
+				<tr>
+					<td><table id="mon_table">
+						<tr><td style="height:10px;border:none;" class="no_hover"></td></tr>
+						<tr><td class="830">8:30</td></tr>
+						<tr><td class="930">9:30</td></tr>
+						<tr><td class="1030">10:30</td></tr>
+						<tr><td class="1130">11:30</td></tr>
+						<tr><td class="1230">12:30</td></tr>
+						<tr><td class="130">1:30</td></tr>
+						<tr><td class="230">2:30</td></tr>
+						<tr><td class="330">3:30</td></tr>
+					</table></td>
+					<td><table id="tue_table">
+						<tr><td style="height:50px;" class="815">8:15</td></tr>
+						<tr><td style="height:50px;" class="940">9:40</td></tr>
+						<tr><td class="no_hover" style="height:55px;border:none;"></td></tr>
+						<tr><td  style="height:55px;" class="1215">12:15</td></tr>
+						<tr><td style="height:50px;" class="140">1:40</td></tr>
+						<tr><td style="height:60px;" class="305">3:05</td></tr>
+					</table></td>
+					<td><table id="wed_table">
+						<tr><td style="height:10px;border:none;"class="no_hover"></td></tr>
+						<tr><td class="830">8:30</td></tr>
+						<tr><td class="930">9:30</td></tr>
+						<tr><td class="1030">10:30</td></tr>
+						<tr><td class="1130">11:30</td></tr>
+						<tr><td class="1230">12:30</td></tr>
+						<tr><td class="130">1:30</td></tr>
+						<tr><td class="230">2:30</td></tr>
+						<tr><td class="330">3:30</td></tr>
+					</table></td>
+					<td><table id="thu_table">
+						<tr><td style="height:50px;" class="815">8:15</td></tr>
+						<tr><td style="height:50px;" class="940">9:40</td></tr>
+						<tr><td class="no_hover" style="height:55px;border:none;"></td></tr>
+						<tr><td style="height:55px;" class="1215">12:15</td></tr>
+						<tr><td style="height:50px;" class="140">1:40</td></tr>
+						<tr><td style="height:60px;" class="305">3:05</td></tr>
+					</table></td>
+					<td><table id="fri_table">
+						<tr><td style="height:10px;border:none;" class="no_hover"></td></tr>
+						<tr><td class="830">8:30</td></tr>
+						<tr><td class="930">9:30</td></tr>
+						<tr><td class="1030">10:30</td></tr>
+						<tr><td class="1130">11:30</td></tr>
+						<tr><td class="1230">12:30</td></tr>
+						<tr><td class="130">1:30</td></tr>
+						<tr><td class="230">2:30</td></tr>
+						<tr><td class="330">3:30</td></tr>
+					</table></td>
+				</tr>
+				<tr style="height:50px;"></tr>
+			</table>
+			</div>
+            
+          <div id="all_classrooms_one_time">
+            <table id="all_classrooms_one_time_table">
+              <tr>
+                <td>
+                  <label>Day:</label>
+                  <select id="all_classrooms_day">
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                  </select></td>
+                <td>
+                  <label>Time:</label>
+                  <select id="all_classrooms_time">
+                    <option value="815">8:15</option>
+                    <option value="830">8:30</option>
+                    <option value="930">9:30</option>
+                    <option value="940">9:40</option>
+                    <option value="1030">10:30</option>
+                    <option value="1130">11:30</option>
+                    <option value="1215">12:15</option>
+                    <option value="1230">12:30</option>
+                    <option value="130">1:30</option>
+                    <option value="140">1:40</option>
+                    <option value="230">2:30</option>
+                    <option value="305">3:05</option>
+                    <option value="330">3:30</option>
+                  </select></td>
+                <td><input type="button" id="all_classrooms_enter" 
+                           onclick="findAllClassrooms();" value="Enter"/></td>
+              </tr>
+            </table>
+            <div id="all_classrooms_results" style="background-color:#d9d9d9;">
+              <table id="all_classrooms_results_table">
+                <tr>
+                  <th id="room">Room</th>
+                  <th id="description">Description</th>
+
+                </tr>
+                {% for room in available_rooms %}
+                <!-- <tr>
+                  <td>WATSON 111</td>
+                  <td>Available From: <span>8:15 - 10:00</span></td>
+                </tr>
+                <tr>
+                  <td>SLOAN B110</td>
+                  <td>Available From: <span>8:15 - 9:30</span></td>
+                </tr>
+                <tr>
+                  <td>SLOAN 201</td>
+                  <td>Available From: <span>8:15 - 12:30</span></td>
+                </tr>
+                <tr>
+                  <td>SLOAN 201</td>
+                  <td>Available From: <span>8:15 - 12:30</span></td>
+                </tr>
+                <tr>
+                  <td>SLOAN 201</td>
+                  <td>Available From: <span>8:15 - 12:30</span></td>
+                </tr>
+                <tr>
+                  <td>SLOAN 201</td>
+                  <td>Available From: <span>8:15 - 12:30</span></td>
+                </tr> -->
+                
+                <tr>
+                  <td class = "c1">{{room.Room}}</td>
+                  <td class = "c2"> {{room.Description}}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            </div>
+          </div> <!-- End all_classrooms_one_time -->
+     
+		</div>
+	</body>
+</html>

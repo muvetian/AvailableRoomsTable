@@ -43,16 +43,6 @@ def generate_column():
 	return line
 
 
-
-
-
-    # 	line += str(keys[i])
-    # 	line += ","
-    # line += keys[len(keys)-1]
-    # line +="\n"
-    # return line
-
-
 csvFile = codecs.open("AllBuildings.csv","w","utf-8")
 first_column = generate_column()
 csvFile.write(first_column)
